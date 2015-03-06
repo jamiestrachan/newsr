@@ -16,6 +16,9 @@
 				if ( reqURL.slice(-1) === "/" ) {
 					reqURL = reqURL.substring(0, reqURL.length - 1);
 				}
+				if (!reqURL) {
+					reqURL = "news";
+				}
 
 				var jqxhr = $.getJSON( "/json/" + reqURL, function(data) {
 					var listElement;
