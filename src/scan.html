@@ -3,8 +3,48 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Newsr</title>	
+		<title>Newsr - Scan</title>
+
+		<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+
+		<script>
+		var newsr = {};
+
+		newsr.scan = function ( source ) {
+			if ( source.match(/\/scan\//) ) {
+				var reqURL = source.split("/scan/")[1];
+				if ( reqURL.slice(-1) === "/" ) {
+					reqURL = reqURL.substring(0, reqURL.length - 1);
+				}
+
+				var jqxhr = $.getJSON( "/json/" + reqURL, function(data) {
+					var listElement;
+					if (data.slots) {
+						for (var i = 0; i < data.slots.length; i++) {
+							if (data.slots[i].name === "main") {
+								for (var j = 0; j < data.slots[i].elements.length; j++) {
+									if (data.slots[i].elements[j].type === "topstories") {
+										listElement = data.slots[i].elements[j];
+									}
+								}
+							}
+						}
+					}
+					console.log(data);
+					console.log(listElement);
+				})
+				.fail(function() {
+					console.log( "error" );
+				});
+			}
+		};
+		</script>
 	</head>
 	<body>
+	<script>
+		( function( url ) {
+			newsr.scan( url );
+		} )( document.URL );
+	</script>
 	</body>
 </html>
