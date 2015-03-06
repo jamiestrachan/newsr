@@ -1,0 +1,2 @@
+# newsr
+Scan your news
