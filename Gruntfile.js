@@ -25,10 +25,16 @@ module.exports = function(grunt) {
                 middleware: function (connect, options) {
                     var middlewares = [];
                     var modRewrite = require('connect-modrewrite');
+                    var contentHost = "http://www.cbc.ca";
+
+                    if (grunt.option('content') === 'qa') {
+                        contentHost = "http://www.qa.nm.cbc.ca";
+                    }
 
                     middlewares.push(modRewrite([
-                        '^/newsr/read/ /newsr/read.html [L]',
-                        '^/newsr/scan/ /newsr/scan.html [L]',
+                      '^/json/(.*)$ ' + contentHost + '/json/$1 [P]',
+                      '^/scan/.*$ /scan.html [L]',
+                      '^/read/.+$ /read.html [L]'
                     ]));
 
                     middlewares.push(connect.static(options.base[0]));
@@ -42,13 +48,13 @@ module.exports = function(grunt) {
 
     open: {
         local: {
-            path: 'http://localhost:' + (grunt.option('port')? grunt.option('port'): 9000) + '/newsr/'
+            path: 'http://localhost:' + (grunt.option('port')? grunt.option('port'): 9000)
         }
     },
 
     watch: {
-        files: [  ],
-        tasks: [  ]
+        files: [ 'src/**/*' ],
+        tasks: [ 'default' ]
     }
   });
 
@@ -59,9 +65,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks( 'grunt-open' );
 
   // Default task(s).
-  //grunt.registerTask('default', []);
+  grunt.registerTask('default', [ 'clean', 'copy' ]);
 
   grunt.registerTask('develop', [
+    'default',
     'connect:server',
     'open:local',
     'watch'
