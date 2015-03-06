@@ -5,8 +5,16 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
 
     clean: {
-        default: [ 'newsr' ]
-    },    
+      default: [ 'newsr' ]
+    },
+
+    copy: {
+      default: {
+        files: [
+          { expand: true, cwd: 'src', src: ['*.html'], dest: 'newsr/'}
+        ]
+      }
+    },  
 
     connect: {
         server: {
@@ -45,6 +53,7 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks( 'grunt-contrib-clean' );
+  grunt.loadNpmTasks( 'grunt-contrib-copy' );
   grunt.loadNpmTasks( 'grunt-contrib-connect' );
   grunt.loadNpmTasks( 'grunt-contrib-watch' );
   grunt.loadNpmTasks( 'grunt-open' );
