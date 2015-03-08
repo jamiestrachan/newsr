@@ -10,6 +10,10 @@
 		<script>
 		var newsr = {};
 
+		newsr.load = function ( url ) {
+			window.location = url;
+		};
+
 		newsr.scan = function ( source ) {
 			var reqURL = source.split("/scan/")[1];
 			if ( reqURL && reqURL.slice(-1) === "/" ) {
@@ -44,10 +48,11 @@
 	<body>
 	<script>
 		( function( url ) {
-			if ( url.match(/\/read\//) ) {
-				newsr.read( url );
+			var path = window.location.pathname;
+			if ( url.path(/^\/read\//) ) {
+				newsr.read( path );
 			} else {
-				newsr.scan( url );
+				newsr.scan( path );
 			}
 		} )( document.URL );
 	</script>
