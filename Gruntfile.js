@@ -33,8 +33,8 @@ module.exports = function(grunt) {
 
                     middlewares.push(modRewrite([
                       '^/json/(.*)$ ' + contentHost + '/json/$1 [P]',
-                      '^/scan/.*$ /scan.html [L]',
-                      '^/read/.+$ /read.html [L]'
+                      '^/scan/.*$ /index.html [L]',
+                      '^/read/.+$ /index.html [L]'
                     ]));
 
                     middlewares.push(connect.static(options.base[0]));
