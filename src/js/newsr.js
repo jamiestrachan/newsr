@@ -16,7 +16,7 @@ var newsr = {};
 
 newsr.init = function () {
 	return true;
-}
+};
 
 newsr.scan = function ( source ) {
 	var reqURL = source.split("/scan/")[1];

@@ -4,6 +4,10 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
+    jshint: {
+      all: ['Gruntfile.js', 'src/**/*.js']
+    },
+
     clean: {
       default: [ 'newsr' ]
     },
@@ -59,6 +63,7 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.loadNpmTasks( 'grunt-contrib-jshint' );
   grunt.loadNpmTasks( 'grunt-contrib-clean' );
   grunt.loadNpmTasks( 'grunt-contrib-copy' );
   grunt.loadNpmTasks( 'grunt-contrib-connect' );
@@ -66,7 +71,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks( 'grunt-open' );
 
   // Default task(s).
-  grunt.registerTask('default', [ 'clean', 'copy' ]);
+  grunt.registerTask('default', [ 'jshint', 'clean', 'copy' ]);
 
   grunt.registerTask('develop', [
     'default',
