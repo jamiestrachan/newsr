@@ -12,11 +12,24 @@ module.exports = function(grunt) {
       default: [ 'newsr' ]
     },
 
+    concat: {
+      js: {
+        options: {
+          separator: '\n\n'
+        },
+        files: {
+          'newsr/js/newsr.js': [
+            'node_modules/mustache/mustache.js',
+            'src/js/newsr.js'
+          ]
+        }
+      }
+    },
+
     copy: {
       default: {
         files: [
-          { expand: true, cwd: 'src', src: ['*.html'], dest: 'newsr/'},
-          { expand: true, cwd: 'src/js', src: ['*.js'], dest: 'newsr/js'}
+          { expand: true, cwd: 'src', src: ['*.html'], dest: 'newsr/'}
         ]
       }
     },  
@@ -65,13 +78,14 @@ module.exports = function(grunt) {
 
   grunt.loadNpmTasks( 'grunt-contrib-jshint' );
   grunt.loadNpmTasks( 'grunt-contrib-clean' );
+  grunt.loadNpmTasks( 'grunt-contrib-concat' );
   grunt.loadNpmTasks( 'grunt-contrib-copy' );
   grunt.loadNpmTasks( 'grunt-contrib-connect' );
   grunt.loadNpmTasks( 'grunt-contrib-watch' );
   grunt.loadNpmTasks( 'grunt-open' );
 
   // Default task(s).
-  grunt.registerTask('default', [ 'jshint', 'clean', 'copy' ]);
+  grunt.registerTask('default', [ 'jshint', 'clean', 'concat', 'copy' ]);
 
   grunt.registerTask('develop', [
     'default',
