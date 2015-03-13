@@ -1,11 +1,14 @@
 var newsr = (function () {
 	// private variables
-	var contentList, contentItem;
+	var dom, contentList, contentItem;
+
+	var templates = {};
+	templates.scanItem = '<h1>{{title}}</h1><h2>{{deck}}</h2><p>{{description}}</p>';
 
 	// private members
 	/* Get the JSON of a content list from a data source */
 	function getList(source, callback) {
-		var jqxhr = $.getJSON( "/json/" + source, function(data) {
+		var jqxhr = $.getJSON("/json/" + source, function(data) {
 			var listElement;
 			if (data.slots) {
 				for (var i = 0; i < data.slots.length; i++) {
@@ -33,6 +36,7 @@ var newsr = (function () {
 	function showItem() {
 		if (contentList.length > 0) {
 			contentItem = contentList.shift();
+			dom.scanItem.innerHTML = Mustache.render(templates.scanItem, contentItem);
 		} else {
 			recommendList();
 		}
@@ -46,6 +50,8 @@ var newsr = (function () {
 	// public variables and members
 	return {
 		init: function () {
+			dom = {};
+			dom.scanItem = document.getElementById("scanitem");
 			return true;
 		},
 		scan: function (source) {
