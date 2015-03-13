@@ -6,12 +6,27 @@
 		<title>Newsr - Scan</title>
 
 		<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-		<script src="js/newsr.js"></script>
+		<script src="/js/newsr.js"></script>
+
+		<style>
+			.mode_scan #recommend, .mode_scan #read,
+			.mode_recommend #scan, .mode_recommend #read,
+			.mode_read #scan, .mode_read #recommend {
+				display: none;
+			}
+		</style>
 	</head>
 	<body>
 
 	<div id="scan">
 		<article id="scanitem"></article>
+		<button id="scannext">Next</button>
+	</div>
+
+	<div id="recommend">
+		<p>That's it! What's next?</p>
+		<ul id="recommendlist">
+		</ul>
 	</div>
 
 	<div id="read">
