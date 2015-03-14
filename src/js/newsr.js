@@ -4,6 +4,7 @@ var newsr = (function () {
 
 	var templates = {};
 	templates.scanItem = '<h1>{{title}}</h1><h2>{{deck}}</h2><p>{{description}}</p>';
+	templates.readingListItem = '{{title}}';
 
 	var contentHistory = (function () {
 		var history = {};
@@ -152,11 +153,20 @@ var newsr = (function () {
 			}
 		}
 
-		function add(item) {
-			var newItem = {};
+		function size() {
+			return list.length;
+		}
 
-			newItem[item.id] = item;
-			list.push(newItem);
+		function walk(fn) {
+			var i;
+
+			for (i = 0; i < list.length; i++) {
+				fn(list[i].item);
+			}
+		}
+
+		function add(item) {
+			list.push({"id": item.id, "item": item});
 
 			backup();
 		}
@@ -183,6 +193,8 @@ var newsr = (function () {
 			toString: toString,
 			restore: restore,
 			destroy: destroy,
+			size: size,
+			walk: walk,
 			add: add,
 			remove: remove,
 			markRead: markRead
@@ -268,6 +280,7 @@ var newsr = (function () {
 			dom.skipItem = document.getElementById("skipitem");
 			dom.saveItem = document.getElementById("saveitem");
 			dom.recommendList = document.getElementById("recommendlist");
+			dom.readStage = document.getElementById("read");
 
 			contentHistory.restore();
 			listHistory.restore();
@@ -304,9 +317,15 @@ var newsr = (function () {
 			});
 		},
 		read: function (source) {
+			var listParts = [], i;
+
 			setMode("read");
 
-			return false;
+			readingList.walk(function (item) {
+				listParts.push("<li>" + Mustache.render(templates.readingListItem, item) + "</li>");
+			});
+			
+			dom.readStage.innerHTML = "<ul>" + listParts.join("") + "</ul>";
 		}
 	};
 }());
