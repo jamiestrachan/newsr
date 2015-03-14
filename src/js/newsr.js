@@ -5,6 +5,106 @@ var newsr = (function () {
 	var templates = {};
 	templates.scanItem = '<h1>{{title}}</h1><h2>{{deck}}</h2><p>{{description}}</p>';
 
+	var contentHistory = (function () {
+		var history = {};
+
+		function toString() {
+			return JSON.stringify(history);
+		}
+
+		function restore() {
+			if (localStorage && localStorage.getItem && localStorage.getItem("contentHistory")) {
+				history = JSON.parse(localStorage.getItem("contentHistory"));
+			}			
+		}
+
+		function inHistory(item) {
+			return !!history[item.id];
+		}
+
+		function updateHistory(item, action) {
+			if (!inHistory(item)) {
+				history[item.id] = {};
+			}
+			history[item.id][action] = true;
+
+			if (localStorage && localStorage.setItem) {
+				localStorage.setItem("contentHistory", JSON.stringify(history));
+			}			
+		}
+
+		return {
+			toString: toString,
+			restore: restore,
+			inHistory: inHistory,
+			skipped: function (item) {
+				updateHistory(item, "skipped");
+			},
+			saved: function (item) {
+				updateHistory(item, "saved");
+			},
+			read: function (item) {
+				updateHistory(item, "read");
+			}
+		};
+	}());
+
+	var listHistory = (function () {
+		var history = {};
+
+		function toString() {
+			return JSON.stringify(history);
+		}
+
+		function restore() {
+			if (localStorage && localStorage.getItem && localStorage.getItem("listHistory")) {
+				history = JSON.parse(localStorage.getItem("listHistory"));
+			}			
+		}
+
+		function extractKey(item) {
+			var i, keyParts = [];
+
+			for (i = 0; i < item.departments.length; i++) {
+				keyParts.push(item.departments[i].name);
+			}
+
+			return keyParts.join("/");
+		}
+
+		function inHistory(item) {
+			return !!history[extractKey(item)];
+		}
+
+		function updateHistory(item, modifier) {
+			if (!inHistory(item)) {
+				history[extractKey(item)] = {};
+				history[extractKey(item)].label = item.departments[item.departments.length - 1].label;
+				history[extractKey(item)].score = 0;
+			}
+			history[extractKey(item)].score += modifier;
+
+			if (localStorage && localStorage.setItem) {
+				localStorage.setItem("listHistory", JSON.stringify(history));
+			}
+		}
+
+		return {
+			toString: toString,
+			restore: restore,
+			inHistory: inHistory,
+			skipped: function (item) {
+				updateHistory(item, -0.5);
+			},
+			saved: function (item) {
+				updateHistory(item, 0.5);
+			},
+			read: function (item) {
+				updateHistory(item, 0.5);
+			}
+		};
+	}());
+
 	// private members
 	/* Do necessary setup when switching modes */
 	function setMode(mode) {
@@ -42,10 +142,26 @@ var newsr = (function () {
 		if (contentList.length > 0) {
 			contentItem = contentList.shift();
 			console.log(contentItem);
-			dom.scanItem.innerHTML = Mustache.render(templates.scanItem, contentItem);
+			if (contentHistory.inHistory(contentItem)) {
+				showItem();
+			} else {
+				dom.scanItem.innerHTML = Mustache.render(templates.scanItem, contentItem);
+			}
 		} else {
 			recommendList();
 		}
+	}
+
+	function skipItem() {
+		contentHistory.skipped(contentItem);
+		listHistory.skipped(contentItem);
+		showItem();
+	}
+
+	function saveItem() {
+		contentHistory.saved(contentItem);
+		listHistory.saved(contentItem);
+		showItem();
 	}
 
 	/* Suggest new list sources to start the scan process again */
@@ -57,12 +173,19 @@ var newsr = (function () {
 
 	// public variables and members
 	return {
+		contentHistory: contentHistory,
+		listHistory: listHistory,
 		init: function () {
 			dom = {};
 			dom.body = document.getElementsByTagName("body")[0];
 			dom.scanItem = document.getElementById("scanitem");
-			dom.scanNext = document.getElementById("scannext");
+			dom.skipItem = document.getElementById("skipitem");
+			dom.saveItem = document.getElementById("saveitem");
 			dom.recommendList = document.getElementById("recommendlist");
+
+			contentHistory.restore();
+			listHistory.restore();
+
 			return true;
 		},
 		scan: function (source) {
@@ -78,7 +201,8 @@ var newsr = (function () {
 				reqURL = "news";
 			}
 
-			dom.scanNext.onclick = showItem;
+			dom.skipItem.onclick = skipItem;
+			dom.saveItem.onclick = saveItem;
 
 			getList(reqURL, function (list) {
 				if (list) {
