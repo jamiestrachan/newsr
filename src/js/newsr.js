@@ -2,6 +2,35 @@ var newsr = (function () {
 	// private variables
 	var dom, contentList, contentItem;
 
+	var utilities = (function () {
+		function saveData(key, data) {
+			if (localStorage && localStorage.setItem) {
+				localStorage.setItem(key, JSON.stringify(data));
+				return true;
+			}
+			return false;
+		}
+
+		function retrieveData(key) {
+			if (localStorage && localStorage.getItem && localStorage.getItem(key)) {
+				return JSON.parse(localStorage.getItem(key));
+			}
+			return false;
+		}
+
+		function destroyData(key) {
+			if (localStorage && localStorage.getItem && localStorage.getItem(key)) {
+				localStorage.removeItem(key);
+			}
+		}
+
+		return {
+			saveData: saveData,
+			retrieveData: retrieveData,
+			destroyData: destroyData
+		};
+	}());
+
 	var templates = {};
 	templates.scanItem = '<h1>{{title}}</h1><h2>{{deck}}</h2><p>{{description}}</p>';
 	templates.readingListItem = '{{title}}';
@@ -14,21 +43,18 @@ var newsr = (function () {
 		}
 
 		function backup() {
-			if (localStorage && localStorage.setItem) {
-				localStorage.setItem("contentHistory", JSON.stringify(history));
-			}			
+			utilities.saveData("contentHistory", history);
 		}
 
 		function restore() {
-			if (localStorage && localStorage.getItem && localStorage.getItem("contentHistory")) {
-				history = JSON.parse(localStorage.getItem("contentHistory"));
-			}			
+			var data = utilities.retrieveData("contentHistory");
+			if (data !== false) {
+				history = data;
+			}
 		}
 
 		function destroy() {
-			if (localStorage && localStorage.getItem && localStorage.getItem("contentHistory")) {
-				localStorage.removeItem("contentHistory");
-			}
+			utilities.destroyData("contentHistory");
 		}
 
 		function inHistory(item) {
@@ -44,20 +70,26 @@ var newsr = (function () {
 			backup();
 		}
 
+		function skipped(item) {
+				updateHistory(item, "skipped");
+		}
+
+		function saved(item) {
+				updateHistory(item, "saved");
+		}
+
+		function read(item) {
+				updateHistory(item, "read");
+		}
+
 		return {
 			toString: toString,
 			restore: restore,
 			destroy: destroy,
 			inHistory: inHistory,
-			skipped: function (item) {
-				updateHistory(item, "skipped");
-			},
-			saved: function (item) {
-				updateHistory(item, "saved");
-			},
-			read: function (item) {
-				updateHistory(item, "read");
-			}
+			skipped: skipped,
+			saved: saved,
+			read: read
 		};
 	}());
 
@@ -69,21 +101,18 @@ var newsr = (function () {
 		}
 
 		function backup() {
-			if (localStorage && localStorage.setItem) {
-				localStorage.setItem("listHistory", JSON.stringify(history));
-			}			
+			utilities.saveData("listHistory", history);
 		}
 
 		function restore() {
-			if (localStorage && localStorage.getItem && localStorage.getItem("listHistory")) {
-				history = JSON.parse(localStorage.getItem("listHistory"));
-			}			
+			var data = utilities.retrieveData("listHistory");
+			if (data !== false) {
+				history = data;
+			}		
 		}
 
 		function destroy() {
-			if (localStorage && localStorage.getItem && localStorage.getItem("listHistory")) {
-				localStorage.removeItem("listHistory");
-			}
+			utilities.destroyData("listHistory");
 		}
 
 		function extractKey(item) {
@@ -111,20 +140,26 @@ var newsr = (function () {
 			backup();
 		}
 
+		function skipped(item) {
+			updateHistory(item, -0.5);
+		}
+
+		function saved(item) {
+			updateHistory(item, 0.5);
+		}
+
+		function read(item) {
+			updateHistory(item, 0.5);
+		}
+
 		return {
 			toString: toString,
 			restore: restore,
 			destroy: destroy,
 			inHistory: inHistory,
-			skipped: function (item) {
-				updateHistory(item, -0.5);
-			},
-			saved: function (item) {
-				updateHistory(item, 0.5);
-			},
-			read: function (item) {
-				updateHistory(item, 0.5);
-			}
+			skipped: skipped,
+			saved: saved,
+			read: read
 		};
 	}());
 
@@ -136,21 +171,18 @@ var newsr = (function () {
 		}
 
 		function backup() {
-			if (localStorage && localStorage.setItem) {
-				localStorage.setItem("readingList", JSON.stringify(list));
-			}
+			utilities.saveData("readingList", list);
 		}
 
 		function restore() {
-			if (localStorage && localStorage.getItem && localStorage.getItem("readingList")) {
-				list = JSON.parse(localStorage.getItem("readingList"));
-			}			
+			var data = utilities.retrieveData("readingList");
+			if (data !== false) {
+				list = data;
+			}		
 		}
 
 		function destroy() {
-			if (localStorage && localStorage.getItem && localStorage.getItem("readingList")) {
-				localStorage.removeItem("readingList");
-			}
+			utilities.destroyData("readingList");
 		}
 
 		function size() {
