@@ -33,7 +33,7 @@ var newsr = (function () {
 
 	var templates = {};
 	templates.scanItem = '<h1>{{title}}</h1><h2>{{deck}}</h2><p>{{description}}</p>';
-	templates.readingListItem = '{{title}}';
+	templates.readingListItem = '<a href="/read{{url}}">{{title}}</a>';
 
 	var contentHistory = (function () {
 		var history = {};
@@ -198,7 +198,7 @@ var newsr = (function () {
 		}
 
 		function add(item) {
-			list.push({"id": item.id, "item": item});
+			list.unshift({"id": item.id, "item": item});
 
 			backup();
 		}
@@ -209,6 +209,7 @@ var newsr = (function () {
 			for (i = 0; i < list.length; i++) {
 				if (list[i].id === item.id) {
 					array.splice(i, 1);
+					break;
 				}
 			}
 
@@ -221,6 +222,17 @@ var newsr = (function () {
 			remove(item);
 		}
 
+		function markReadURL(url) {
+			var i;
+
+			for (i = 0; i < list.length; i++) {
+				if (list[i].item.url === url) {
+					markRead(list[i].item);
+					break;
+				}
+			}
+		}
+
 		return {
 			toString: toString,
 			restore: restore,
@@ -229,7 +241,8 @@ var newsr = (function () {
 			walk: walk,
 			add: add,
 			remove: remove,
-			markRead: markRead
+			markRead: markRead,
+			markReadURL: markReadURL
 		};
 	}());
 
@@ -293,6 +306,10 @@ var newsr = (function () {
 		showItem();
 	}
 
+	function readItem() {
+
+	}
+
 	/* Suggest new list sources to start the scan process again */
 	function recommendList() {
 		setMode("recommend");
@@ -313,6 +330,9 @@ var newsr = (function () {
 			dom.saveItem = document.getElementById("saveitem");
 			dom.recommendList = document.getElementById("recommendlist");
 			dom.readStage = document.getElementById("read");
+			dom.readItem = document.getElementById("readitem");
+			dom.fullItem = document.getElementById("fullitem");
+			dom.doneItem = document.getElementById("doneitem");
 
 			contentHistory.restore();
 			listHistory.restore();
@@ -330,7 +350,7 @@ var newsr = (function () {
 
 			setMode("scan");
 
-			reqURL  = source.split("/scan/")[1];
+			reqURL = source.split("/scan/")[1];
 			if ( reqURL && reqURL.slice(-1) === "/" ) {
 				reqURL = reqURL.substring(0, reqURL.length - 1);
 			}
@@ -349,15 +369,27 @@ var newsr = (function () {
 			});
 		},
 		read: function (source) {
-			var listParts = [], i;
+			var reqURL, doneLink, listParts = [];
 
-			setMode("read");
+			reqURL = source.split("/read/")[1];
+			if ( reqURL && reqURL.slice(-1) === "/" ) {
+				reqURL = reqURL.substring(0, reqURL.length - 1);
+			}
 
-			readingList.walk(function (item) {
-				listParts.push("<li>" + Mustache.render(templates.readingListItem, item) + "</li>");
-			});
-			
-			dom.readStage.innerHTML = "<ul>" + listParts.join("") + "</ul>";
+			if (reqURL) {
+				setMode("readitem");
+
+				dom.fullItem.innerHTML = '<iframe src="http://www.cbc.ca/' + reqURL + '" width="100%" height="750px"></iframe>';
+				dom.doneItem.onclick = function () { readingList.markReadURL(reqURL); };
+			} else {
+				setMode("read");
+
+				readingList.walk(function (item) {
+					listParts.push("<li>" + Mustache.render(templates.readingListItem, item) + "</li>");
+				});
+				
+				dom.readStage.innerHTML = "<ul>" + listParts.join("") + "</ul>";
+			}
 		}
 	};
 }());
