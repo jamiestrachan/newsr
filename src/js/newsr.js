@@ -208,7 +208,7 @@ var newsr = (function () {
 
 			for (i = 0; i < list.length; i++) {
 				if (list[i].id === item.id) {
-					array.splice(i, 1);
+					list.splice(i, 1);
 					break;
 				}
 			}
@@ -247,6 +247,27 @@ var newsr = (function () {
 	}());
 
 	// private members
+	/* Global click handler */
+	function handleClicks(e) {
+		var clicked = e.target;
+		var method = clicked.getAttribute("data-action");
+
+		if (method) {
+			switch (method) {
+				case "skip":
+					skipItem();
+					break;
+				case "save":
+					saveItem();
+					break;
+				case "done":
+					readingList.markReadURL(clicked.getAttribute("data-url"));
+					break;
+			}
+			//e.preventDefault();
+		}
+	}
+
 	/* Do necessary setup when switching modes */
 	function setMode(mode) {
 		dom.body.className = "mode_" + mode;
@@ -326,17 +347,15 @@ var newsr = (function () {
 			dom = {};
 			dom.body = document.getElementsByTagName("body")[0];
 			dom.scanItem = document.getElementById("scanitem");
-			dom.skipItem = document.getElementById("skipitem");
-			dom.saveItem = document.getElementById("saveitem");
 			dom.recommendList = document.getElementById("recommendlist");
 			dom.readStage = document.getElementById("read");
 			dom.readItem = document.getElementById("readitem");
-			dom.fullItem = document.getElementById("fullitem");
-			dom.doneItem = document.getElementById("doneitem");
 
 			contentHistory.restore();
 			listHistory.restore();
 			readingList.restore();
+
+			dom.body.addEventListener("click", handleClicks, false);
 
 			return true;
 		},
@@ -358,9 +377,6 @@ var newsr = (function () {
 				reqURL = "news";
 			}
 
-			dom.skipItem.onclick = skipItem;
-			dom.saveItem.onclick = saveItem;
-
 			getList(reqURL, function (list) {
 				if (list) {
 					contentList = list;
@@ -379,8 +395,9 @@ var newsr = (function () {
 			if (reqURL) {
 				setMode("readitem");
 
-				dom.fullItem.innerHTML = '<iframe src="http://www.cbc.ca/' + reqURL + '" width="100%" height="750px"></iframe>';
-				dom.doneItem.onclick = function () { readingList.markReadURL(reqURL); };
+				reqURL = "/" + reqURL;
+
+				dom.readItem.innerHTML = '<iframe src="http://www.cbc.ca' + reqURL + '" width="100%" height="750px"></iframe><a href="/read/" data-action="done" data-url="' + reqURL + '">Done</a>';
 			} else {
 				setMode("read");
 
