@@ -24,10 +24,22 @@ var newsr = (function () {
 			}
 		}
 
+		// from https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+		function shuffleArray(array) {
+		    for (var i = array.length - 1; i > 0; i--) {
+		        var j = Math.floor(Math.random() * (i + 1));
+		        var temp = array[i];
+		        array[i] = array[j];
+		        array[j] = temp;
+		    }
+		    return array;
+		}
+
 		return {
 			saveData: saveData,
 			retrieveData: retrieveData,
-			destroyData: destroyData
+			destroyData: destroyData,
+			shuffleArray: shuffleArray
 		};
 	}());
 
@@ -94,7 +106,33 @@ var newsr = (function () {
 	}());
 
 	var listHistory = (function () {
-		var history = {};
+		var history = {
+			"news": {},
+			"news/world": {},
+			"news/canada": {},
+			"news/politics": {},
+			"news/business": {},
+			"news/health": {},
+			"news/arts": {},
+			"news/technology": {},
+			"news/trending": {},
+			"sports": {},
+			"sports/hockey/nhl": {},
+			"sports/football/cfl": {},
+			"sports/football/nfl": {},
+			"sports/baseball/mlb": {},
+			"sports/basketball/nba": {},
+			"sports/soccer": {},
+			"sports/golf": {},
+			"sports/tennis": {},
+			"sports/figureskating": {},
+			"sports/curling": {},
+			"sports/skiing": {},
+			"sports/speedskating": {}
+		};
+		// TO DO: keep track of min and max scores for better recommendations
+		var minScore = 0;
+		var maxScore = 0;
 
 		function toString() {
 			return JSON.stringify(history);
@@ -152,6 +190,18 @@ var newsr = (function () {
 			updateHistory(item, 0.5);
 		}
 
+		function recommendLists(count) {
+			var ids = Object.keys(history), i, recommendations = [];
+
+			utilities.shuffleArray(ids);
+
+			for (i = 0; i < count; i++) {
+				recommendations.push({"label": history[ids[i]].label, "url": ids[i]});
+			}
+
+			return recommendations;
+		}
+
 		return {
 			toString: toString,
 			restore: restore,
@@ -159,7 +209,8 @@ var newsr = (function () {
 			inHistory: inHistory,
 			skipped: skipped,
 			saved: saved,
-			read: read
+			read: read,
+			recommendLists: recommendLists
 		};
 	}());
 
@@ -333,9 +384,17 @@ var newsr = (function () {
 
 	/* Suggest new list sources to start the scan process again */
 	function recommendList() {
+		var recommendations, recommendationCount = 3, i, listLinks = [];
+
 		setMode("recommend");
 
-		dom.recommendList.innerHTML = '<li><a href="/scan/news/business/">Business</a></li><li><a href="/scan/news/arts">Arts</a></li><li><a href="/scan/sports">Sports</a></li>';
+		recommendations = listHistory.recommendLists(recommendationCount);
+
+		for (i = 0; i < recommendationCount; i++) {
+			listLinks.push('<li><a href="' + recommendations[i].url + '">' + (recommendations[i].label ? recommendations[i].label : recommendations[i].url) + '</a></li>');
+		}
+
+		dom.recommendList.innerHTML = listLinks.join("");
 	}
 
 	// public variables and members
